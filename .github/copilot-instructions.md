@@ -18,6 +18,7 @@ You're helping build a real-time multiplayer Pong game with a **1-day deadline**
 - **HTML5 Canvas** for rendering (800x400px)
 - **Socket.io-client** for real-time communication
 - **Pinia** for state management
+- **Vue Router** for navigation
 - **TypeScript** for type safety
 - **Vite** for dev server
 - **Tailwind CSS** for styling
@@ -151,6 +152,19 @@ interface GameState {
 - **Setup**: `node server.js` (port 3000) + `npm run dev` (port 5173)
 - **Test**: Open 2 browser tabs = 2 players playing
 - **Ship**: Working localhost demo
+
+### Package Installation
+**IMPORTANT**: Always use Linux console commands for package installation:
+- **Install each package individually** - Never use npm install with package.json
+- **Server packages**: `cd server && npm install <package-name>`
+- **Client packages**: `cd client && npm install <package-name>`
+- **Dev dependencies**: Add `--save-dev` flag for development packages
+- **Create directories first** before installing packages
+- **Ask questions one by one when uncertain** - Don't make assumptions, ask the user for clarification
+- **Examples**:
+  - `npm install socket.io` (server)
+  - `npm install socket.io-client` (client)
+  - `npm install --save-dev @types/node` (TypeScript types)
 
 ## 💡 Development Tips
 
