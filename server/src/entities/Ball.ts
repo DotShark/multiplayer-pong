@@ -46,9 +46,11 @@ export class Ball implements BallInterface {
     const angle = relativeIntersectY * maxAngle
     const direction = this.x < GAME_CONFIG.CANVAS_WIDTH / 2 ? 1 : -1
     
-    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy)
-    this.vx = Math.cos(angle) * speed * direction
-    this.vy = Math.sin(angle) * speed
+    // increase speed on paddle hit
+    const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy)
+    const newSpeed = currentSpeed * GAME_CONFIG.SPEED_MULTIPLIER
+    this.vx = Math.cos(angle) * newSpeed * direction
+    this.vy = Math.sin(angle) * newSpeed
     
     if (direction === 1) {
       this.x = paddle.x + paddle.width + this.radius

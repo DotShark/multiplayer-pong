@@ -67,6 +67,9 @@ function drawGame() {
   const canvas = canvasRef.value
   const context = ctx.value
 
+  // Update interpolation before drawing
+  gameStore.updateInterpolation()
+
   // Clear canvas
   context.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -99,13 +102,14 @@ function drawGame() {
     gameState.rightPaddle.height
   )
 
-  // Draw ball
+  // Draw ball using interpolated position
+  const interpolatedBall = gameStore.interpolatedBall
   context.fillStyle = '#ffffff'
   context.beginPath()
   context.arc(
-    gameState.ball.x,
-    gameState.ball.y,
-    gameState.ball.radius,
+    interpolatedBall.x,
+    interpolatedBall.y,
+    interpolatedBall.radius,
     0,
     2 * Math.PI
   )
