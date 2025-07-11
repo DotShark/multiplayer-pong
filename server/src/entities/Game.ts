@@ -81,7 +81,7 @@ export class Game {
 
     this.gameLoop = setInterval(() => {
       this.update()
-    }, GAME_CONFIG.TICK_RATE)
+    }, GAME_CONFIG.TICK_INTERVAL)
   }
 
   private stopGame(): void {

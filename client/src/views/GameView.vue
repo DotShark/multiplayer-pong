@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-900 text-white">
-    <div class="container flex flex-col justify-center items-center gap-4">
+    <div class="flex flex-col justify-center items-center gap-4 py-4">
       <h1 class="text-4xl font-bold text-center">Multiplayer Pong</h1>
       
       <div class="flex flex-col gap-6 items-center">

@@ -50,9 +50,6 @@ export class Ball implements BallInterface {
     this.vx = Math.cos(angle) * speed * direction
     this.vy = Math.sin(angle) * speed
     
-    this.vx *= (1 + GAME_CONFIG.BALL_SPEED_INCREASE)
-    this.vy *= (1 + GAME_CONFIG.BALL_SPEED_INCREASE)
-    
     if (direction === 1) {
       this.x = paddle.x + paddle.width + this.radius
     } else {
