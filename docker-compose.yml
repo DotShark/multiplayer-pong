@@ -2,13 +2,13 @@ version: '3.8'
 
 services:
   pong-server:
-    name: pong-server
+    container_name: pong-server
     build: ./server
     ports:
       - "4100:3000"
       
   pong-client:
-    name: pong-client
+    container_name: pong-client
     build: ./client
     ports:
       - "3300:3000"
