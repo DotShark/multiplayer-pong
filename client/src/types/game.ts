@@ -1,9 +1,38 @@
-// Shared types for multiplayer Pong game
+// Shared types for multiplayer Pong game - matches server implementation
 export interface GameState {
-  ball: { x: number; y: number; vx: number; vy: number }
-  leftPaddle: { y: number }
-  rightPaddle: { y: number }
-  score: { left: number; right: number }
+  ball: Ball
+  leftPaddle: Paddle
+  rightPaddle: Paddle
+  score: Score
+  status: GameStatus
+}
+
+export interface Ball {
+  x: number
+  y: number
+  vx: number
+  vy: number
+  radius: number
+}
+
+export interface Paddle {
+  x: number
+  y: number
+  width: number
+  height: number
+  speed: number
+}
+
+export interface Score {
+  left: number
+  right: number
+}
+
+export enum GameStatus {
+  WAITING = 'waiting',
+  WAITING_FOR_OPPONENT = 'waiting_for_opponent',
+  PLAYING = 'playing',
+  GAME_OVER = 'game_over'
 }
 
 export interface Player {
@@ -12,18 +41,33 @@ export interface Player {
   ready: boolean
 }
 
-export type GameStatus = 'waiting' | 'waitingForOpponent' | 'playing' | 'gameOver'
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected'
 
-export interface SocketEvents {
-  // Client → Server
-  paddle_move: { direction: 'up' | 'down' }
-  ready: {}
-  
-  // Server → Client
-  game_state: GameState
-  waiting_for_opponent: {}
-  game_start: {}
-  game_over: { winner: 'left' | 'right' }
-  game_full: {}
+export interface ServerToClientEvents {
+  gameState: (gameState: GameState) => void
+  waitingForOpponent: () => void
+  gameStart: () => void
+  gameOver: (data: { winner: 'left' | 'right' }) => void
+  gameFull: () => void
+  playerJoined: (data: { playerId: string; side: 'left' | 'right' }) => void
+  playerLeft: (data: { playerId: string }) => void
+}
+
+export interface ClientToServerEvents {
+  paddleMove: (data: { direction: 'up' | 'down' }) => void
+  ready: () => void
+  joinGame: () => void
+}
+
+export const GAME_CONFIG = {
+  CANVAS_WIDTH: 800,
+  CANVAS_HEIGHT: 400,
+  PADDLE_WIDTH: 15,
+  PADDLE_HEIGHT: 80,
+  BALL_RADIUS: 7.5,
+  BALL_SPEED: 5,
+  PADDLE_SPEED: 8,
+  WINNING_SCORE: 5,
+  TICK_RATE: 50,
+  BALL_SPEED_INCREASE: 0.1
 }

@@ -1,49 +1,57 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import type { GameState, ConnectionState } from '@/types/game'
+import { GameStatus } from '@/types/game'
 
-export interface GameState {
-  ball: { x: number; y: number; vx: number; vy: number }
-  leftPaddle: { y: number }
-  rightPaddle: { y: number }
-  score: { left: number; right: number }
-}
+export const useGameStore = defineStore('game', {
+  state: () => ({
+    gameState: {
+      ball: { x: 400, y: 200, vx: 5, vy: 3, radius: 7.5 },
+      leftPaddle: { x: 20, y: 160, width: 15, height: 80, speed: 8 },
+      rightPaddle: { x: 765, y: 160, width: 15, height: 80, speed: 8 },
+      score: { left: 0, right: 0 },
+      status: GameStatus.WAITING
+    } as GameState,
+    connectionState: 'disconnected' as ConnectionState,
+    playerCount: 0,
+    playerSide: null as 'left' | 'right' | null,
+    winner: null as 'left' | 'right' | null
+  }),
 
-export const useGameStore = defineStore('game', () => {
-  const gameState = ref<GameState>({
-    ball: { x: 400, y: 200, vx: 5, vy: 3 },
-    leftPaddle: { y: 160 },
-    rightPaddle: { y: 160 },
-    score: { left: 0, right: 0 }
-  })
+  actions: {
+    updateGameState(newState: GameState) {
+      this.gameState = newState
+    },
 
-  const connectionState = ref<'disconnected' | 'connecting' | 'connected'>('disconnected')
-  const playerCount = ref(0)
-  const gameStatus = ref<'waiting' | 'waitingForOpponent' | 'playing' | 'gameOver'>('waiting')
+    updateConnectionState(state: ConnectionState) {
+      this.connectionState = state
+    },
 
-  function updateGameState(newState: GameState) {
-    gameState.value = newState
-  }
+    updatePlayerCount(count: number) {
+      this.playerCount = count
+    },
 
-  function updateConnectionState(state: 'disconnected' | 'connecting' | 'connected') {
-    connectionState.value = state
-  }
+    updateGameStatus(status: GameStatus) {
+      this.gameState.status = status
+    },
 
-  function updatePlayerCount(count: number) {
-    playerCount.value = count
-  }
+    updatePlayerSide(side: 'left' | 'right') {
+      this.playerSide = side
+    },
 
-  function updateGameStatus(status: 'waiting' | 'waitingForOpponent' | 'playing' | 'gameOver') {
-    gameStatus.value = status
-  }
+    updateWinner(winnerSide: 'left' | 'right') {
+      this.winner = winnerSide
+    },
 
-  return {
-    gameState,
-    connectionState,
-    playerCount,
-    gameStatus,
-    updateGameState,
-    updateConnectionState,
-    updatePlayerCount,
-    updateGameStatus
+    resetGame() {
+      this.gameState = {
+        ball: { x: 400, y: 200, vx: 5, vy: 3, radius: 7.5 },
+        leftPaddle: { x: 20, y: 160, width: 15, height: 80, speed: 8 },
+        rightPaddle: { x: 765, y: 160, width: 15, height: 80, speed: 8 },
+        score: { left: 0, right: 0 },
+        status: GameStatus.WAITING
+      }
+      this.winner = null
+      this.playerSide = null
+    }
   }
 })
