@@ -29,7 +29,7 @@ export function useSocket() {
     connectionError.value = null
     gameStore.updateConnectionState('connecting')
 
-    actualSocket = io('http://localhost:3000', {
+    actualSocket = io('https://pong-api.dotshark.dev', {
       transports: ['websocket'],
       upgrade: false,
       reconnection: true,
