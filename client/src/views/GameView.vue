@@ -14,7 +14,15 @@
 
       <div v-if="connectionError" class="mt-6 max-w-md mx-auto">
         <div class="bg-red-600 text-white px-4 py-2 rounded-lg text-center">
-          {{ connectionError }}
+          <p class="font-semibold">Connection Error</p>
+          <p class="text-sm">{{ connectionError }}</p>
+        </div>
+      </div>
+
+      <div v-if="isConnecting" class="mt-6 max-w-md mx-auto">
+        <div class="bg-yellow-600 text-white px-4 py-2 rounded-lg text-center">
+          <p class="font-semibold">Connecting...</p>
+          <p class="text-sm">Please wait while we connect to the game server</p>
         </div>
       </div>
     </div>
@@ -22,23 +30,39 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import GameCanvas from '@/components/game/GameCanvas.vue'
 import GameHUD from '@/components/game/GameHUD.vue'
 import { useSocket } from '@/composables/useSocket'
 import { useGameStore } from '@/stores/gameStore'
 
 const gameStore = useGameStore()
-const { connectionError, joinGame, connect } = useSocket()
+const { connectionError, joinGame, connect, isConnected, isConnecting } = useSocket()
 
 onMounted(() => {
-  // Auto-connect and join game when component mounts
+  // Auto-connect when component mounts
+  console.log('🎮 GameView mounted, connecting...')
   connect()
   
-  // Small delay to ensure connection is established
-  setTimeout(() => {
-    joinGame()
-  }, 100)
+  // Watch for connection state changes to auto-join
+  const stopWatching = watch(
+    () => isConnected.value,
+    function(connected: boolean) {
+      if (connected) {
+        console.log('🎮 Connected! Joining game...')
+        // Small delay to ensure connection is fully established
+        setTimeout(() => {
+          joinGame()
+        }, 100)
+      }
+    },
+    { immediate: true }
+  )
+  
+  // Cleanup watcher when component unmounts
+  onUnmounted(() => {
+    stopWatching()
+  })
 })
 </script>
 

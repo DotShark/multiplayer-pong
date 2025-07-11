@@ -1,8 +1,10 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted, watchEffect } from 'vue'
 import { io, Socket } from 'socket.io-client'
 import { useGameStore } from '@/stores/gameStore'
 import type { ServerToClientEvents, ClientToServerEvents } from '@/types/game'
 import { GameStatus } from '@/types/game'
+
+let actualSocket: Socket<ServerToClientEvents, ClientToServerEvents> | null
 
 export function useSocket() {
   const gameStore = useGameStore()
@@ -11,13 +13,23 @@ export function useSocket() {
   const isConnecting = ref(false)
   const connectionError = ref<string | null>(null)
 
-  const connect = () => {
-    if (socket.value?.connected) return
+  function connect() {
+    if (actualSocket?.connected) {
+      console.log('✅ Already connected')
+      return
+    }
 
+    if (isConnecting.value) {
+      console.log('⏳ Already connecting')
+      return
+    }
+
+    console.log('🔗 Attempting to connect...')
     isConnecting.value = true
     connectionError.value = null
+    gameStore.updateConnectionState('connecting')
 
-    socket.value = io('http://localhost:3000', {
+    actualSocket = io('http://localhost:3000', {
       transports: ['websocket'],
       upgrade: false,
       reconnection: true,
@@ -25,26 +37,34 @@ export function useSocket() {
       reconnectionDelay: 1000,
     })
 
+    socket.value = actualSocket
+
+    console.log('🔗 Socket instance created, waiting for connection...')
+
     // Connection events
-    socket.value.on('connect', () => {
-      console.log('🔗 Connected to server')
+    actualSocket.on('connect', () => {
+      console.log('🔗 Connected to server with ID:', socket.value?.id)
       isConnected.value = true
       isConnecting.value = false
+      connectionError.value = null
       gameStore.updateConnectionState('connected')
     })
 
-    socket.value.on('disconnect', () => {
-      console.log('🔌 Disconnected from server')
+    actualSocket.on('disconnect', (reason) => {
+      console.log('🔌 Disconnected from server:', reason)
       isConnected.value = false
       isConnecting.value = false
       gameStore.updateConnectionState('disconnected')
+      gameStore.updateGameStatus(GameStatus.WAITING)
     })
 
-    socket.value.on('connect_error', (error) => {
+    actualSocket.on('connect_error', (error) => {
       console.error('❌ Connection error:', error)
-      connectionError.value = error.message
+      console.error('❌ Error message:', error.message)
+      connectionError.value = `Connection failed: ${error.message}`
       isConnecting.value = false
-      gameStore.updateConnectionState('disconnected')
+      isConnected.value = false
+      gameStore.updateConnectionState('error')
     })
 
     // Game events
@@ -52,65 +72,76 @@ export function useSocket() {
       gameStore.updateGameState(gameState)
     })
 
-    socket.value.on('waitingForOpponent', () => {
+    // Client-managed player assignment - we don't need server to tell us our side
+    actualSocket.on('waitingForOpponent', () => {
+      // First player to connect gets left side
+      gameStore.updatePlayerSide('left')
       gameStore.updateGameStatus(GameStatus.WAITING_FOR_OPPONENT)
+      console.log('👤 You are the LEFT player - waiting for opponent')
     })
 
-    socket.value.on('gameStart', () => {
+    actualSocket.on('gameStart', () => {
+      // If game starts and we don't have a side yet, we must be the right player
+      if (!gameStore.playerSide) {
+        gameStore.updatePlayerSide('right')
+        console.log('👤 You are the RIGHT player - game starting!')
+      }
       gameStore.updateGameStatus(GameStatus.PLAYING)
     })
 
-    socket.value.on('gameOver', (data) => {
+    actualSocket.on('gameOver', (data) => {
       gameStore.updateGameStatus(GameStatus.GAME_OVER)
       gameStore.updateWinner(data.winner)
     })
 
-    socket.value.on('gameFull', () => {
+    actualSocket.on('gameFull', () => {
       connectionError.value = 'Game is full!'
       disconnect()
     })
 
-    socket.value.on('playerJoined', (data) => {
-      console.log(`🎮 Player ${data.playerId} joined as ${data.side}`)
-      gameStore.updatePlayerSide(data.side)
-    })
-
-    socket.value.on('playerLeft', (data) => {
-      console.log(`👋 Player ${data.playerId} left`)
-    })
+    // Remove the playerJoined/playerLeft complexity - we don't need it
+    // The server will handle game state through gameState events
   }
 
-  const disconnect = () => {
-    if (socket.value) {
-      socket.value.disconnect()
+  function disconnect() {
+    if (actualSocket) {
+      console.log('🔌 Disconnecting...')
+      actualSocket.disconnect()
+      actualSocket = null
       socket.value = null
     }
     isConnected.value = false
     isConnecting.value = false
+    connectionError.value = null
     gameStore.updateConnectionState('disconnected')
+    gameStore.resetGame()
   }
 
-  const joinGame = () => {
-    if (socket.value?.connected) {
-      socket.value.emit('joinGame')
+  function joinGame() {
+    if (!actualSocket?.connected) {
+      console.warn('⚠️ Cannot join game - not connected')
+      return
+    }
+    
+    console.log('🎮 Joining game...')
+    actualSocket!.emit('joinGame')
+  }
+
+  function movePaddle(direction: 'up' | 'down') {
+    if (actualSocket?.connected) {
+      actualSocket!.emit('paddleMove', { direction })
+    } else {
+      console.warn('⚠️ Cannot move paddle - socket not connected')
     }
   }
 
-  const movePaddle = (direction: 'up' | 'down') => {
-    if (socket.value?.connected) {
-      socket.value.emit('paddleMove', { direction })
+  function setReady() {
+    if (actualSocket?.connected) {
+      actualSocket!.emit('ready')
     }
   }
 
-  const setReady = () => {
-    if (socket.value?.connected) {
-      socket.value.emit('ready')
-    }
-  }
-
-  onMounted(() => {
-    connect()
-  })
+  watchEffect(() => console.log(actualSocket?.connected))
 
   onUnmounted(() => {
     disconnect()

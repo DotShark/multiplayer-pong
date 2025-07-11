@@ -14,7 +14,8 @@ export const useGameStore = defineStore('game', {
     connectionState: 'disconnected' as ConnectionState,
     playerCount: 0,
     playerSide: null as 'left' | 'right' | null,
-    winner: null as 'left' | 'right' | null
+    winner: null as 'left' | 'right' | null,
+    isGameStarted: false
   }),
 
   actions: {
@@ -32,6 +33,11 @@ export const useGameStore = defineStore('game', {
 
     updateGameStatus(status: GameStatus) {
       this.gameState.status = status
+      if (status === GameStatus.PLAYING) {
+        this.isGameStarted = true
+      } else if (status === GameStatus.WAITING) {
+        this.isGameStarted = false
+      }
     },
 
     updatePlayerSide(side: 'left' | 'right') {
@@ -52,6 +58,8 @@ export const useGameStore = defineStore('game', {
       }
       this.winner = null
       this.playerSide = null
+      this.isGameStarted = false
+      this.playerCount = 0
     }
   }
 })

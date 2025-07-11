@@ -25,10 +25,9 @@ io.on('connection', (socket) => {
   console.log(`New connection: ${socket.id}`)
   
   socket.on('joinGame', () => {
+    console.log(`Player ${socket.id} requesting to join game`)
     gameManager.handlePlayerJoin(socket)
   })
-
-  gameManager.handlePlayerJoin(socket)
 })
 
 httpServer.listen(PORT, () => {

@@ -5,7 +5,6 @@
     :height="GAME_CONFIG.CANVAS_HEIGHT"
     class="border-2 border-white bg-black rounded"
     @keydown="handleKeyDown"
-    @keyup="handleKeyUp"
     tabindex="0"
   />
 </template>
@@ -23,8 +22,6 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const ctx = ref<CanvasRenderingContext2D | null>(null)
 const animationId = ref<number | null>(null)
 
-const keysPressed = ref<Set<string>>(new Set())
-
 onMounted(() => {
   if (canvasRef.value) {
     ctx.value = canvasRef.value.getContext('2d')
@@ -39,32 +36,22 @@ onUnmounted(() => {
   }
 })
 
-const handleKeyDown = (event: KeyboardEvent) => {
+function handleKeyDown(event: KeyboardEvent) {
   event.preventDefault()
   
   if (gameStore.gameState.status !== GameStatus.PLAYING) return
   
   const key = event.key.toLowerCase()
-  
-  if (!keysPressed.value.has(key)) {
-    keysPressed.value.add(key)
     
-    if ((key === 'w' || key === 'arrowup') && gameStore.playerSide) {
-      movePaddle('up')
-    } else if ((key === 's' || key === 'arrowdown') && gameStore.playerSide) {
-      movePaddle('down')
-    }
+  if ((key === 'w' || key === 'arrowup') && gameStore.playerSide) {
+    movePaddle('up')
+  } else if ((key === 's' || key === 'arrowdown') && gameStore.playerSide) {
+    movePaddle('down')
   }
 }
 
-const handleKeyUp = (event: KeyboardEvent) => {
-  event.preventDefault()
-  const key = event.key.toLowerCase()
-  keysPressed.value.delete(key)
-}
-
-const startRenderLoop = () => {
-  const render = () => {
+function startRenderLoop() {
+  function render() {
     if (ctx.value && canvasRef.value) {
       drawGame()
     }
@@ -73,7 +60,7 @@ const startRenderLoop = () => {
   render()
 }
 
-const drawGame = () => {
+function drawGame() {
   if (!ctx.value || !canvasRef.value) return
 
   const { gameState } = gameStore
@@ -149,7 +136,7 @@ const drawGame = () => {
   }
 }
 
-const drawStatusOverlay = () => {
+function drawStatusOverlay() {
   if (!ctx.value || !canvasRef.value) return
 
   const canvas = canvasRef.value

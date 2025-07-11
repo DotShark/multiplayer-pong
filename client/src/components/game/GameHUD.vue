@@ -6,7 +6,8 @@
         <div class="w-3 h-3 rounded-full" :class="{
           'bg-green-500': gameStore.connectionState === 'connected',
           'bg-yellow-500 animate-pulse': gameStore.connectionState === 'connecting',
-          'bg-red-500': gameStore.connectionState === 'disconnected'
+          'bg-red-500': gameStore.connectionState === 'disconnected',
+          'bg-red-600 animate-pulse': gameStore.connectionState === 'error'
         }"></div>
       </div>
       <span class="text-sm font-medium">{{ connectionStatusText }}</span>
@@ -83,6 +84,8 @@ const connectionStatusText = computed(() => {
       return 'Connected'
     case 'connecting':
       return 'Connecting...'
+    case 'error':
+      return 'Connection Error'
     default:
       return 'Disconnected'
   }

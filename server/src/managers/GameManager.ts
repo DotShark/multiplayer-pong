@@ -42,7 +42,8 @@ export class GameManager {
 
     console.log(`Player ${socket.id} joined as ${side} paddle`)
 
-    this.io.emit('playerJoined', { playerId: socket.id, side })
+    // Send assignment only to the joining player
+    socket.emit('playerJoined', { playerId: socket.id, side })
 
     const gameStatus = this.game.getStatus()
     switch (gameStatus) {

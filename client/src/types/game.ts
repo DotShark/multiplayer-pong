@@ -41,7 +41,7 @@ export interface Player {
   ready: boolean
 }
 
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected'
+export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error'
 
 export interface ServerToClientEvents {
   gameState: (gameState: GameState) => void

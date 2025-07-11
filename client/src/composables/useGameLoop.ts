@@ -14,13 +14,13 @@ export function useGameLoop() {
   
   const interpolationFactor = 0.1 // Smooth interpolation factor
 
-  const startLoop = (updateCallback: (deltaTime: number) => void) => {
+  function startLoop(updateCallback: (deltaTime: number) => void) {
     if (isRunning.value) return
 
     isRunning.value = true
     lastTime.value = performance.now()
 
-    const gameLoop = (currentTime: number) => {
+    function gameLoop(currentTime: number) {
       const deltaTime = currentTime - lastTime.value
       lastTime.value = currentTime
 
@@ -34,7 +34,7 @@ export function useGameLoop() {
     frameId.value = requestAnimationFrame(gameLoop)
   }
 
-  const stopLoop = () => {
+  function stopLoop() {
     isRunning.value = false
     if (frameId.value) {
       cancelAnimationFrame(frameId.value)
@@ -42,7 +42,7 @@ export function useGameLoop() {
     }
   }
 
-  const interpolate = (current: InterpolationTarget, target: InterpolationTarget): InterpolationTarget => {
+  function interpolate(current: InterpolationTarget, target: InterpolationTarget): InterpolationTarget {
     return {
       x: current.x + (target.x - current.x) * interpolationFactor,
       y: current.y + (target.y - current.y) * interpolationFactor,
@@ -55,7 +55,7 @@ export function useGameLoop() {
     const frameTimes: number[] = []
     let lastFrameTime = 0
 
-    return (currentTime: number) => {
+    return function(currentTime: number) {
       const deltaTime = currentTime - lastFrameTime
       lastFrameTime = currentTime
       
